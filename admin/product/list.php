@@ -1,6 +1,9 @@
 <?php
 require '../../connect.php';
-
+// check if hasn't session admin redirect to login
+if (!isset($_SESSION['admin'])) {
+    redirect('admin/login.php');
+}
 include '../../layouts/header.php';
 ?>
 
@@ -36,15 +39,16 @@ include '../../layouts/header.php';
                                 <td><?= $product['name'] ?></td>
                                 <td>Rp <?= $product['price'] ?></td>
                                 <td>
-                                    <img src="<?= $base_url . 'assets/img/' . $product['img'] ?>" alt="" height="250px"
-                                        width="250px">
+                                    <img src="<?= $base_url . 'assets/product/' . $product['img'] ?>" alt="" height="80px"
+                                        width="80px">
                                 </td>
                                 <td>
-                                    <a href="<?= $base_url . 'admin/product/edit?id=' . $product['id'] ?>"
+                                    <a href="<?= $base_url . 'admin/product/edit.php?id=' . $product['id'] ?>"
                                         class="badge bg-warning"> Edit</a>
-                                    <a href="<?= $base_url . 'admin/product/delete?id=' . $product['id'] ?>"
-                                        class="badge bg-warning"
-                                        onclick="confirm('Apakah anda yakin akan menghapus data ini ?')"> Hapus</a>
+                                    <a href="<?= $base_url . 'admin/product/delete.php?id=' . $product['id'] ?>"
+                                        class="badge bg-danger"
+                                        onclick="confirm('Apakah anda yakin akan menghapus data ini ?')"> Hapus
+                                    </a>
                                 </td>
                             </tr>
                             <?php } ?>

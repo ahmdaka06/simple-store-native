@@ -1,7 +1,7 @@
 <?php
 require '../connect.php';
 
-// check if has session admin
+// check if has session admin redirect to dashboard
 if (isset($_SESSION['admin']) AND $_SESSION['admin']) {
     redirect('admin/dashboard.php');
 }

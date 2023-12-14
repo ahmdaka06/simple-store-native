@@ -6,6 +6,25 @@ if (!isset($_SESSION['admin'])) {
     redirect('admin/login.php');
 }
 
+// get parameter id
+if (isset($_GET['id']) AND is_numeric($_GET['id'])) {
+    $id = $_GET['id'];
+
+    // check with query where by id
+    $check_product = $database->query("SELECT * FROM product WHERE `id` = $id LIMIT 1");
+
+    // if data is null 
+    if ($check_product->num_rows == 0) {
+        http_response_code(404);
+        die('not found');
+    }
+
+    // set data with fetching
+    $product = $check_product->fetch_assoc();
+} else {
+    http_response_code(404);
+    die('not found');
+}
 if (isset($_POST['submit'])) {
     $name = $_POST['name'];
     $price = $_POST['price'];
@@ -17,27 +36,31 @@ if (isset($_POST['submit'])) {
     $file_tmp = $_FILES['img']['tmp_name'];
     $dir = $config['app']['path'] . 'assets/product/'; // set directory
 
-    if (in_array($ext, $permission_ext) === true){
-        //Mengupload gambar
-        $set_img_name = md5($image . time()) . '.' . $ext; // set and generate image name with hash md5
-        if (move_uploaded_file($file_tmp, $dir . $set_img_name)) {
-            // query insert produvt
-            $insert = $database->query("INSERT INTO `product`(`id`, `name`, `price`, `img`) VALUES (null, '$name', '$price','$set_img_name')");
-            if ($insert) { // if success insert
-                alert('Berhasil menambahkan product');
-                redirect('admin/product/list.php');
-            } else {
-                alert('Gagal menambahkan product');
-                redirect('admin/product/list.php');
+    $set_img_name = $product['img'];
+    
+    if (isset($_FILES['img']['name']) AND !empty($_FILES['img']['name'])) {
+        if (in_array($ext, $permission_ext) === true){
+            // upload image
+            $set_img_name = md5($image . time()) . '.' . $ext; // set and generate image name with hash md5
+            $upload = move_uploaded_file($file_tmp, $dir . $set_img_name); // upload image
+            if (!$upload) { // check if upload is error
+                alert('Gagal upload gambar');
+            }
+            if (file_exists($dir . $product['img'])) { // delete old image
+                unlink($dir . $product['img']);
             }
         } else {
-            alert('Gagal upload gambar');
-            
+            alert('Eksitensi file tidak di perbolehkan!.');
         }
-
-        
+    }
+    // query update
+    $update = $database->query("UPDATE `product` SET `name`='$name',`price`='$price',`img`='$set_img_name',`updated_at`='$datetime' WHERE `id` = $id");
+    if ($update) { // if success update
+        alert('Berhasil mengubah produk');
+        redirect('admin/product/list.php');
     } else {
-        alert('Eksitensi file tidak di perbolehkan!.');
+        alert('Gagal mengubah produk');
+        redirect('admin/product/list.php');
     }
 
 }
@@ -58,11 +81,11 @@ include '../../layouts/header.php';
                     <div class="row">
                         <div class="form-group col-md-12 my-1">
                             <label for="">Nama Produk</label>
-                            <input type="text" class="form-control" name="name" id="name" required>
+                            <input type="text" class="form-control" name="name" id="name" value="<?= $product['name'] ?>" required>
                         </div>
                         <div class="form-group col-md-12 my-1">
                             <label for="">Harga Produk</label>
-                            <input type="number" class="form-control" name="price" id="price" required>
+                            <input type="number" class="form-control" name="price" id="price" value="<?= $product['price'] ?>" required>
                         </div>
                         <div class="form-group col-md-12 my-1">
                             <label for="">Gambar Produk</label>
@@ -72,7 +95,7 @@ include '../../layouts/header.php';
                                 <button class="browse btn btn-outline-secondary select-img" type="button" id="button-addon2">Upload</button>
                             </div>
                             <div class="d-flex justify-content-center">
-                                <img src="<?= $base_url . 'assets/dummy.png' ?>" class="img-thumbnail" alt="dummy image" id="preview" height="200px" width="200px">
+                                <img src="<?= $base_url . 'assets/product/' . $product['img'] ?>" class="img-thumbnail" alt="dummy image" id="preview" height="200px" width="200px">
                             </div>
                         </div>
                         <div class="form-group col-md-12 my-1">

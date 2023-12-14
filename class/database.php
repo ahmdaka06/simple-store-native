@@ -17,4 +17,9 @@ class Database {
     {
         return $this->conn->query($query);
     }
+
+    public function affected_rows()
+    {
+        return $this->conn->affected_rows;
+    }
 }
